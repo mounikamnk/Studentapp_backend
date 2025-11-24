@@ -1,6 +1,7 @@
+#serializers.py
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Question
+from .models import Question,TestResult
 
 class SignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -30,3 +31,20 @@ class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
         fields = "__all__"
+
+# -------- ADD THIS NEW SERIALIZER FOR SAVING TEST RESULT --------
+class TestResultSerializer(serializers.ModelSerializer):
+    user_email = serializers.CharField(source="user.email", read_only=True)
+
+    class Meta:
+        model = TestResult
+        fields = [
+            "id",
+            "user",
+            "user_email",
+            "score",
+            "total_questions",
+            "percentage",
+            "status_message",
+            "created_at"
+        ]
