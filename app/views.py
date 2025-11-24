@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate
 
 from .serializers import SignupSerializer, QuestionSerializer
-from .models import Question,TestResult
+from .models import Question
 
 
 # -------- SIGNUP ----------
@@ -73,50 +73,19 @@ def get_questions(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def submit_quiz(request):
-    answers = request.data.get("answers", {})  # {"1": "a"}
+    answers = request.data.get("answers", {})  # {question_id: "a"}
 
-    if not answers:
-        return Response({"error": "No answers provided"}, status=400)
-
-    # Convert question IDs from string -> int
-    try:
-        qids = [int(qid) for qid in answers.keys()]
-    except:
-        return Response({"error": "Invalid question IDs"}, status=400)
+    qids = list(answers.keys())
 
     questions = Question.objects.filter(id__in=qids)
-    total = len(questions)
-
-    if total == 0:
-        return Response({"error": "No valid questions found"}, status=400)
 
     score = 0
     for q in questions:
-        if answers.get(str(q.id)) == q.correct_option:
+        if answers[str(q.id)] == q.correct_option:
             score += 1
 
-    # Percentage
-    percentage = (score / total) * 100
-
-    # Result message
-    result_msg = (
-        "You are selected. Congratulations!"
-        if percentage >= 50
-        else "Sorry, try again next time."
-    )
-
-    # -------- SAVE RESULT IN DATABASE --------
-    TestResult.objects.create(
-        user=request.user if request.user.is_authenticated else None,
-        total_questions=total,
-        correct_answers=score,
-        percentage=round(percentage, 2),
-        status_message=result_msg
-    )
-
     return Response({
-        "total_questions": total,
-        "score": score,
-        "percentage": round(percentage, 2),
-        "message": result_msg
+        "total_questions": len(questions),
+        "score": score
     })
+

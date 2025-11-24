@@ -1,7 +1,4 @@
-#models.py
 from django.db import models
-from django.contrib.auth.models import User
-
 class Question(models.Model):
     CATEGORY_APTITUDE = 'aptitude'
     CATEGORY_JAVA = 'java'
@@ -39,14 +36,3 @@ class Question(models.Model):
     def __str__(self):
         return f"{self.category} - {self.text[:50]}"
 
-class TestResult(models.Model):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    total_questions = models.IntegerField()
-    correct_answers = models.IntegerField()
-    percentage = models.FloatField()
-    status_message = models.CharField(max_length=200)  # e.g., "You are selected"
-
-    submitted_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.user.username} - {self.percentage}%"
